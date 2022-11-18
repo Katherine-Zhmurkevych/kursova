@@ -25,11 +25,33 @@ public class Menu {
     private MobileDeviceManager mobileDeviceManager = new MobileDeviceManagerImpl();
 
     public void show() {
-        logger.info("Choose the action");
-        logger.info("Select the table to interact - press 1");
-        logger.info("Find users of network by receiver number(based on 3-table JOIN) - press 2");
-        logger.info("Find devices by owner ID(based on 3-table JOIN) - press 3");
-        logger.info("Enter 4 to exit");
+//        logger.info("Choose the action");
+//        logger.info("Select the table to interact - press 1");
+//        logger.info("Find users of network by receiver number(based on 3-table JOIN) - press 2");
+//        logger.info("Find devices by owner ID(based on 3-table JOIN) - press 3");
+//        logger.info("Enter 4 to exit");
+        logger.info("Please choose the working mode:");
+        logger.info("1. Administration mode ");
+        logger.info("2. User mode");
+        logger.info("Your choice:");
+        try {
+            int choice = Integer.parseInt(bufferedReader.readLine());
+            switch (choice) {
+                case 1:
+                    logger.info("Choose your action");
+                    logger.info("1. Direct DB modification");
+                    logger.info("2. Users' feedback management");
+                case 2:
+                    logger.info("Please enter your name:");
+                    logger.info("Please enter your phone:");
+                    logger.info("Are you satisfied with our service? Yes/no");
+                    logger.info("Please leave a comment:");
+                    logger.info("Save data? Yes/no");
+            }
+            //TODO to be continued...
+        } catch (IOException e) {
+            logger.error("Menu show error: " + e.getMessage());
+        }
         try {
             int choice = Integer.valueOf(bufferedReader.readLine());
             switch (choice) {

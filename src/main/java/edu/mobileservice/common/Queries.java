@@ -10,4 +10,6 @@ public class Queries {
             + " JOIN users_have_mobile_devices AS ud ON u.id = ud.user_id"
             + " JOIN mobile_device AS md ON ud.mobile_device_id = md.id"
             + " WHERE u.id = ?";
+    public static String GET_ALL_NEGATIVE_FEEDBACK = "SELECT f.id, f.message, f.user_id, f.message_type " +
+            "FROM feedback AS f WHERE f.message_type = 'negative'";
 }
