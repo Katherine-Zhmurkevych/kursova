@@ -53,7 +53,8 @@ public class FeedbackManagerImpl implements FeedbackManager {
             final String surname = String.valueOf(bufferedReader.readLine());
             logger.warn("Please enter your phone:");
             final String phone = String.valueOf(bufferedReader.readLine());
-            final UserEntity newUser = new UserEntity(userId, name, surname, phone);
+            final String userType = "guest";
+            final UserEntity newUser = new UserEntity(userId, name, surname, userType, phone);
             userManager.create(newUser);
             logger.warn("#####New User registration is complete#####");
             logger.warn(newUser.toString() + " was stored into DB");

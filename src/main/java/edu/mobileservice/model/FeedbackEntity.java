@@ -61,6 +61,11 @@ public class FeedbackEntity {
 
     @Override
     public String toString() {
-        return String.format("\nID: %-5s %-8s feedback: %-10s", id, messageType, message);
+        return "FeedbackEntity{" +
+                "id='" + id + '\'' +
+                ", message='" + message + '\'' +
+                ", userId=" + userId +
+                ", messageType='" + messageType + '\'' +
+                '}';
     }
 }

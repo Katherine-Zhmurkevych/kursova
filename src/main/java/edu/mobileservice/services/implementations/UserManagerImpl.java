@@ -21,9 +21,9 @@ public class UserManagerImpl implements UserManager {
     @Override
     public UserEntity findUser(final Integer id) {
         final UserEntity user = (UserEntity) userDAO.findByID(id);
-        if (Objects.isNull(user)) {
-            throw new IllegalStateException(String.format("User with %s id doesn't exist", id));
-        }
+//        if (Objects.isNull(user)) {
+//            throw new IllegalStateException(String.format("User with %s id doesn't exist", id));
+//        }
         return user;
     }
 

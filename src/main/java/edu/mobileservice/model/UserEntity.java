@@ -14,16 +14,19 @@ public class UserEntity {
     private String name;
     @Column(name = "surname", length = 45)
     private String surname;
-    @Column(name = "surname", length = 12)
+    @Column(name = "user_type", length = 5)
+    private String userType;
+    @Column(name = "phone", length = 12)
     private String phone;
 
     public UserEntity() {
     }
 
-    public UserEntity(final Integer id, final String name, final String surname, final String phone) {
+    public UserEntity(Integer id, String name, String surname, String userType, String phone) {
         this.id = id;
         this.name = name;
         this.surname = surname;
+        this.userType = userType;
         this.phone = phone;
     }
 
@@ -59,8 +62,22 @@ public class UserEntity {
         this.phone = phone;
     }
 
+    public String getUserType() {
+        return userType;
+    }
+
+    public void setUserType(String userType) {
+        this.userType = userType;
+    }
+
     @Override
     public String toString() {
-        return String.format("\nID: %-3s Name: %-8s Surname: %-1s", id, name, surname);
+        return "UserEntity{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", surname='" + surname + '\'' +
+                ", userType='" + userType + '\'' +
+                ", phone='" + phone + '\'' +
+                '}';
     }
 }

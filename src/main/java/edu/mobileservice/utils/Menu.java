@@ -70,17 +70,14 @@ public class Menu {
                 clearConsole();
                 if (adminChoice == 1) {
                     showAdminMenuModification();
-                }
-                else if (adminChoice == 2) {
+                } else if (adminChoice == 2) {
                     showUsersNegativeFeedback();
                 }
 
-            }
-            else if (choice == 2) {
+            } else if (choice == 2) {
                 feedbackManager.processUserFeedback();
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.error("Menu show error: " + e.getMessage());
         }
     }
@@ -89,10 +86,14 @@ public class Menu {
         final List<FeedbackEntity> allNegativeFeedbacks = feedbackManager.findAllNegativeFeedback();
         if (CollectionUtils.isEmpty(allNegativeFeedbacks)) {
             logger.warn("There are no negative users feedback");
-        }
-        else {
-            logger.warn("There are " + allNegativeFeedbacks.size() + "negative feedback from users");
-            allNegativeFeedbacks.forEach(feedback -> logger.warn(feedback.toString() + "\n"));
+        } else {
+            logger.warn(allNegativeFeedbacks.size() + " negative feedback from users");
+            allNegativeFeedbacks.forEach(feedback -> {
+                final UserEntity user = userManager.findUser(feedback.getUserId());
+                logger.warn(user.getName() + " " + user.getSurname() + " has left a comment");
+                logger.warn(feedback.getMessage());
+                logger.warn("His phone is " + user.getPhone());
+            });
             logger.warn("You should reach them and resolve an appropriate issue");
         }
     }
@@ -123,8 +124,7 @@ public class Menu {
                 default:
                     break;
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.error("Menu show error: " + e.getMessage());
         }
     }
@@ -165,8 +165,7 @@ public class Menu {
                 default:
                     break;
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.error("Menu select table error: " + e.getMessage());
         }
     }
@@ -218,8 +217,7 @@ public class Menu {
             }
             logger.info(GOING_BACK_TO_MENU_MESSAGE);
             showAdminMenuModification();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.error("Table users error: " + e.getMessage());
         }
     }
@@ -231,9 +229,11 @@ public class Menu {
         String createFirstName = bufferedReader.readLine();
         logger.info("Surname:");
         String createSurname = bufferedReader.readLine();
+        logger.info("User type:");
+        String createUserType = bufferedReader.readLine();
         logger.info("Phone number:");
         String phone = bufferedReader.readLine();
-        return new UserEntity(createId, createFirstName, createSurname, phone);
+        return new UserEntity(createId, createFirstName, createSurname, createUserType, phone);
     }
 
     private void selectTableMobileNumberAction() {
@@ -281,8 +281,7 @@ public class Menu {
             }
             logger.info(GOING_BACK_TO_MENU_MESSAGE);
             showAdminMenuModification();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.error("Table mobile_number error: " + e.getMessage());
         }
     }
@@ -344,8 +343,7 @@ public class Menu {
             }
             logger.info(GOING_BACK_TO_MENU_MESSAGE);
             showAdminMenuModification();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.error("Table outgoing_call error: " + e.getMessage());
         }
     }
@@ -409,8 +407,7 @@ public class Menu {
             }
             logger.info(GOING_BACK_TO_MENU_MESSAGE);
             showAdminMenuModification();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.error("Table sms error: " + e.getMessage());
         }
     }
@@ -472,8 +469,7 @@ public class Menu {
             }
             logger.info(GOING_BACK_TO_MENU_MESSAGE);
             showAdminMenuModification();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.error("Table price_plan error: " + e.getMessage());
         }
     }
@@ -544,8 +540,7 @@ public class Menu {
             }
             logger.info(GOING_BACK_TO_MENU_MESSAGE);
             showAdminMenuModification();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.error("Table users_have_mobile_devices error: " + e.getMessage());
         }
     }
@@ -604,8 +599,7 @@ public class Menu {
             }
             logger.info(GOING_BACK_TO_MENU_MESSAGE);
             showAdminMenuModification();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.error("Table mobile_devices error: " + e.getMessage());
         }
     }
