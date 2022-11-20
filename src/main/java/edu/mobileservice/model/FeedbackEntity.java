@@ -9,7 +9,7 @@ public class FeedbackEntity {
 
     @PrimaryKey
     @Column(name = "id")
-    private Integer id;
+    private String id;
     @Column(name = "message", length = 1000)
     private String message;
     @Column(name = "user_id")
@@ -20,18 +20,18 @@ public class FeedbackEntity {
     public FeedbackEntity() {
     }
 
-    public FeedbackEntity(Integer id, String message, Integer userId, String messageType) {
+    public FeedbackEntity(final String id, final String message, final Integer userId, final String messageType) {
         this.id = id;
         this.message = message;
         this.userId = userId;
         this.messageType = messageType;
     }
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(final String id) {
         this.id = id;
     }
 
@@ -39,7 +39,7 @@ public class FeedbackEntity {
         return message;
     }
 
-    public void setMessage(String message) {
+    public void setMessage(final String message) {
         this.message = message;
     }
 
@@ -47,7 +47,7 @@ public class FeedbackEntity {
         return userId;
     }
 
-    public void setUserId(Integer userId) {
+    public void setUserId(final Integer userId) {
         this.userId = userId;
     }
 
@@ -55,7 +55,7 @@ public class FeedbackEntity {
         return messageType;
     }
 
-    public void setMessageType(String messageType) {
+    public void setMessageType(final String messageType) {
         this.messageType = messageType;
     }
 

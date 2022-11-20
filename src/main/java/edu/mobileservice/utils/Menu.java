@@ -1,19 +1,48 @@
 package edu.mobileservice.utils;
 
-import edu.mobileservice.model.*;
-import edu.mobileservice.services.*;
-import edu.mobileservice.services.implementations.*;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import static edu.mobileservice.utils.AnswerUtils.clearConsole;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.util.List;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
+import edu.mobileservice.model.FeedbackEntity;
+import edu.mobileservice.model.MobileDeviceEntity;
+import edu.mobileservice.model.MobileNumberEntity;
+import edu.mobileservice.model.OutgoingCallEntity;
+import edu.mobileservice.model.PricePlanEntity;
+import edu.mobileservice.model.SMSEntity;
+import edu.mobileservice.model.UserEntity;
+import edu.mobileservice.model.UsersHaveMobileDevicesEntity;
+import edu.mobileservice.services.FeedbackManager;
+import edu.mobileservice.services.MobileDeviceManager;
+import edu.mobileservice.services.MobileNumberManager;
+import edu.mobileservice.services.OutgoingCallManager;
+import edu.mobileservice.services.PricePlanManager;
+import edu.mobileservice.services.SMSManager;
+import edu.mobileservice.services.UserManager;
+import edu.mobileservice.services.UsersHaveMobileDevicesManager;
+import edu.mobileservice.services.implementations.FeedbackManagerImpl;
+import edu.mobileservice.services.implementations.MobileDeviceManagerImpl;
+import edu.mobileservice.services.implementations.MobileNumberManagerImpl;
+import edu.mobileservice.services.implementations.OutgoingCallManagerImpl;
+import edu.mobileservice.services.implementations.PricePlanManagerImpl;
+import edu.mobileservice.services.implementations.SMSManagerImpl;
+import edu.mobileservice.services.implementations.UserManagerImpl;
+import edu.mobileservice.services.implementations.UsersHaveMobileDevicesManagerImpl;
 
 
 public class Menu {
 
+    private static final String GOING_BACK_TO_MENU_MESSAGE = "Going back to menu\n\n";
+    private static final String FIND_ALL_MESSAGE = "Find all - press 1";
+    private static final String ENTER_ID_MESSAGE = "Enter id for search";
     private static Logger logger = LogManager.getLogger("Menu");
     private static BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
     private UserManager userManager = new UserManagerImpl();
@@ -23,37 +52,60 @@ public class Menu {
     private PricePlanManager pricePlanManager = new PricePlanManagerImpl();
     private UsersHaveMobileDevicesManager usersHaveMobileDevicesManager = new UsersHaveMobileDevicesManagerImpl();
     private MobileDeviceManager mobileDeviceManager = new MobileDeviceManagerImpl();
+    private FeedbackManager feedbackManager = new FeedbackManagerImpl();
 
-    public void show() {
-//        logger.info("Choose the action");
-//        logger.info("Select the table to interact - press 1");
-//        logger.info("Find users of network by receiver number(based on 3-table JOIN) - press 2");
-//        logger.info("Find devices by owner ID(based on 3-table JOIN) - press 3");
-//        logger.info("Enter 4 to exit");
+    public void mainMenu() {
         logger.info("Please choose the working mode:");
         logger.info("1. Administration mode ");
         logger.info("2. User mode");
         logger.info("Your choice:");
         try {
             int choice = Integer.parseInt(bufferedReader.readLine());
-            switch (choice) {
-                case 1:
-                    logger.info("Choose your action");
-                    logger.info("1. Direct DB modification");
-                    logger.info("2. Users' feedback management");
-                case 2:
-                    logger.info("Please enter your name:");
-                    logger.info("Please enter your phone:");
-                    logger.info("Are you satisfied with our service? Yes/no");
-                    logger.info("Please leave a comment:");
-                    logger.info("Save data? Yes/no");
+            clearConsole();
+            if (choice == 1) {
+                logger.info("Choose your action");
+                logger.info("1. Direct DB modification");
+                logger.info("2. Users' feedback");
+                int adminChoice = Integer.parseInt(bufferedReader.readLine());
+                clearConsole();
+                if (adminChoice == 1) {
+                    showAdminMenuModification();
+                }
+                else if (adminChoice == 2) {
+                    showUsersNegativeFeedback();
+                }
+
             }
-            //TODO to be continued...
-        } catch (IOException e) {
+            else if (choice == 2) {
+                feedbackManager.processUserFeedback();
+            }
+        }
+        catch (IOException e) {
             logger.error("Menu show error: " + e.getMessage());
         }
+    }
+
+    private void showUsersNegativeFeedback() {
+        final List<FeedbackEntity> allNegativeFeedbacks = feedbackManager.findAllNegativeFeedback();
+        if (CollectionUtils.isEmpty(allNegativeFeedbacks)) {
+            logger.warn("There are no negative users feedback");
+        }
+        else {
+            logger.warn("There are " + allNegativeFeedbacks.size() + "negative feedback from users");
+            allNegativeFeedbacks.forEach(feedback -> logger.warn(feedback.toString() + "\n"));
+            logger.warn("You should reach them and resolve an appropriate issue");
+        }
+    }
+
+
+    public void showAdminMenuModification() {
+        logger.info("Choose the action");
+        logger.info("Select the table to interact - press 1");
+        logger.info("Find users of network by receiver number(based on 3-table JOIN) - press 2");
+        logger.info("Find devices by owner ID(based on 3-table JOIN) - press 3");
+        logger.info("Enter 4 to exit");
         try {
-            int choice = Integer.valueOf(bufferedReader.readLine());
+            int choice = Integer.parseInt(bufferedReader.readLine());
             switch (choice) {
                 case 1:
                     selectTable();
@@ -65,13 +117,14 @@ public class Menu {
                     break;
                 case 3:
                     logger.info("Enter the owner id for search");
-                    Integer ownerIdForSearch = Integer.valueOf(bufferedReader.readLine());
+                    Integer ownerIdForSearch = Integer.parseInt(bufferedReader.readLine());
                     logger.info(userManager.findMobileDevicesByOwner(ownerIdForSearch));
                     break;
-                case 4:
+                default:
                     break;
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             logger.error("Menu show error: " + e.getMessage());
         }
     }
@@ -86,7 +139,7 @@ public class Menu {
         logger.info("Table users_have_mobile_devices - press 6");
         logger.info("Table mobile_device - press 7");
         try {
-            int choice = Integer.valueOf(bufferedReader.readLine());
+            int choice = Integer.parseInt(bufferedReader.readLine());
             switch (choice) {
                 case 1:
                     selectTableUserAction();
@@ -109,28 +162,31 @@ public class Menu {
                 case 7:
                     selectTableMobileDeviceAction();
                     break;
+                default:
+                    break;
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             logger.error("Menu select table error: " + e.getMessage());
         }
     }
 
     private void selectTableUserAction() {
         logger.info("Table user");
-        logger.info("Find all - press 1");
+        logger.info(FIND_ALL_MESSAGE);
         logger.info("Find user by id - press 2");
         logger.info("Create user - press 3");
         logger.info("Update user - press 4");
         logger.info("Delete user - press 5");
         try {
-            int choice = Integer.valueOf(bufferedReader.readLine());
+            int choice = Integer.parseInt(bufferedReader.readLine());
             switch (choice) {
                 case 1:
                     logger.info(userManager.findAllUsers());
                     break;
                 case 2:
-                    logger.info("Enter id for search");
-                    int searchId = Integer.valueOf(bufferedReader.readLine());
+                    logger.info(ENTER_ID_MESSAGE);
+                    int searchId = Integer.parseInt(bufferedReader.readLine());
                     logger.info(userManager.findUser(searchId));
                     break;
                 case 3:
@@ -157,40 +213,45 @@ public class Menu {
                         logger.info("User deleted");
                     }
                     break;
+                default:
+                    break;
             }
-            logger.info("Going back to menu\n\n");
-            show();
-        } catch (IOException e) {
+            logger.info(GOING_BACK_TO_MENU_MESSAGE);
+            showAdminMenuModification();
+        }
+        catch (IOException e) {
             logger.error("Table users error: " + e.getMessage());
         }
     }
 
     private UserEntity getParametersAndCreateUserEntityWithThem() throws IOException {
         logger.info("Id:");
-        Integer createId = Integer.valueOf(bufferedReader.readLine());
+        Integer createId = Integer.parseInt(bufferedReader.readLine());
         logger.info("First name:");
         String createFirstName = bufferedReader.readLine();
         logger.info("Surname:");
         String createSurname = bufferedReader.readLine();
-        return new UserEntity(createId, createFirstName, createSurname);
+        logger.info("Phone number:");
+        String phone = bufferedReader.readLine();
+        return new UserEntity(createId, createFirstName, createSurname, phone);
     }
 
     private void selectTableMobileNumberAction() {
         logger.info("Table mobile_number");
-        logger.info("Find all - press 1");
+        logger.info(FIND_ALL_MESSAGE);
         logger.info("Find mobile number by id - press 2");
         logger.info("Create mobile number - press 3");
         logger.info("Update mobile number - press 4");
         logger.info("Delete mobile number - press 5");
         try {
-            int choice = Integer.valueOf(bufferedReader.readLine());
+            int choice = Integer.parseInt(bufferedReader.readLine());
             switch (choice) {
                 case 1:
                     logger.info(mobileNumberManager.findAllMobileNumbers());
                     break;
                 case 2:
-                    logger.info("Enter id for search");
-                    int searchId = Integer.valueOf(bufferedReader.readLine());
+                    logger.info(ENTER_ID_MESSAGE);
+                    int searchId = Integer.parseInt(bufferedReader.readLine());
                     logger.info(mobileNumberManager.findMobileNumber(searchId));
                     break;
                 case 3:
@@ -218,41 +279,42 @@ public class Menu {
                     }
                     break;
             }
-            logger.info("Going back to menu\n\n");
-            show();
-        } catch (IOException e) {
+            logger.info(GOING_BACK_TO_MENU_MESSAGE);
+            showAdminMenuModification();
+        }
+        catch (IOException e) {
             logger.error("Table mobile_number error: " + e.getMessage());
         }
     }
 
     private MobileNumberEntity getParametersAndCreateMobileNumberEntityWithThem() throws IOException {
         logger.info("Id:");
-        Integer createId = Integer.valueOf(bufferedReader.readLine());
+        Integer createId = Integer.parseInt(bufferedReader.readLine());
         logger.info("Number:");
         String createNumber = bufferedReader.readLine();
         logger.info("Price plan Id:");
-        Integer createPricePlanId = Integer.valueOf(bufferedReader.readLine());
+        Integer createPricePlanId = Integer.parseInt(bufferedReader.readLine());
         logger.info("User Id:");
-        Integer createUserId = Integer.valueOf(bufferedReader.readLine());
+        Integer createUserId = Integer.parseInt(bufferedReader.readLine());
         return new MobileNumberEntity(createId, createNumber, createPricePlanId, createUserId);
     }
 
     private void selectTableOutgoingCallAction() {
         logger.info("Table outgoing_call");
-        logger.info("Find all - press 1");
+        logger.info(FIND_ALL_MESSAGE);
         logger.info("Find outgoing call by id - press 2");
         logger.info("Create outgoing call - press 3");
         logger.info("Update outgoing call - press 4");
         logger.info("Delete outgoing call - press 5");
         try {
-            int choice = Integer.valueOf(bufferedReader.readLine());
+            int choice = Integer.parseInt(bufferedReader.readLine());
             switch (choice) {
                 case 1:
                     logger.info(outgoingCallManager.findAllCalls());
                     break;
                 case 2:
-                    logger.info("Enter id for search");
-                    int searchId = Integer.valueOf(bufferedReader.readLine());
+                    logger.info(ENTER_ID_MESSAGE);
+                    int searchId = Integer.parseInt(bufferedReader.readLine());
                     logger.info(outgoingCallManager.findCallById(searchId));
                     break;
                 case 3:
@@ -280,22 +342,23 @@ public class Menu {
                     }
                     break;
             }
-            logger.info("Going back to menu\n\n");
-            show();
-        } catch (IOException e) {
+            logger.info(GOING_BACK_TO_MENU_MESSAGE);
+            showAdminMenuModification();
+        }
+        catch (IOException e) {
             logger.error("Table outgoing_call error: " + e.getMessage());
         }
     }
 
     private OutgoingCallEntity getParametersAndCreateOutgoingCallEntityWithThem() throws IOException {
         logger.info("Id:");
-        Integer createId = Integer.valueOf(bufferedReader.readLine());
+        Integer createId = Integer.parseInt(bufferedReader.readLine());
         logger.info("Caller number Id:");
-        Integer createCallerNumberId = Integer.valueOf(bufferedReader.readLine());
+        Integer createCallerNumberId = Integer.parseInt(bufferedReader.readLine());
         logger.info("Receiver number:");
         String createReceiverNumber = bufferedReader.readLine();
         logger.info("Duration:");
-        Integer createDuration = Integer.valueOf(bufferedReader.readLine());
+        Integer createDuration = Integer.parseInt(bufferedReader.readLine());
         logger.info("Type:");
         String createType = bufferedReader.readLine();
         return new OutgoingCallEntity(createId, createCallerNumberId, createReceiverNumber, createDuration, createType);
@@ -303,20 +366,20 @@ public class Menu {
 
     private void selectTableSMSAction() {
         logger.info("Table sms");
-        logger.info("Find all - press 1");
+        logger.info(FIND_ALL_MESSAGE);
         logger.info("Find sms by id - press 2");
         logger.info("Create sms - press 3");
         logger.info("Update sms - press 4");
         logger.info("Delete sms - press 5");
         try {
-            int choice = Integer.valueOf(bufferedReader.readLine());
+            int choice = Integer.parseInt(bufferedReader.readLine());
             switch (choice) {
                 case 1:
                     logger.info(smsManager.findAllSMS());
                     break;
                 case 2:
-                    logger.info("Enter id for search");
-                    int searchId = Integer.valueOf(bufferedReader.readLine());
+                    logger.info(ENTER_ID_MESSAGE);
+                    int searchId = Integer.parseInt(bufferedReader.readLine());
                     logger.info(smsManager.findSMSById(searchId));
                     break;
                 case 3:
@@ -344,18 +407,19 @@ public class Menu {
                     }
                     break;
             }
-            logger.info("Going back to menu\n\n");
-            show();
-        } catch (IOException e) {
+            logger.info(GOING_BACK_TO_MENU_MESSAGE);
+            showAdminMenuModification();
+        }
+        catch (IOException e) {
             logger.error("Table sms error: " + e.getMessage());
         }
     }
 
     private SMSEntity getParametersAndCreateSMSEntityWithThem() throws IOException {
         logger.info("Id:");
-        Integer createId = Integer.valueOf(bufferedReader.readLine());
+        Integer createId = Integer.parseInt(bufferedReader.readLine());
         logger.info("Sender number Id:");
-        Integer createSenderNumberId = Integer.valueOf(bufferedReader.readLine());
+        Integer createSenderNumberId = Integer.parseInt(bufferedReader.readLine());
         logger.info("Receiver number:");
         String createReceiverNumber = bufferedReader.readLine();
         logger.info("Text:");
@@ -365,20 +429,20 @@ public class Menu {
 
     private void selectTablePricePlanAction() {
         logger.info("Table price_plan");
-        logger.info("Find all - press 1");
+        logger.info(FIND_ALL_MESSAGE);
         logger.info("Find price plan by id - press 2");
         logger.info("Create price plan - press 3");
         logger.info("Update price plan - press 4");
         logger.info("Delete price plan - press 5");
         try {
-            int choice = Integer.valueOf(bufferedReader.readLine());
+            int choice = Integer.parseInt(bufferedReader.readLine());
             switch (choice) {
                 case 1:
                     logger.info(pricePlanManager.findAllPricePlans());
                     break;
                 case 2:
-                    logger.info("Enter id for search");
-                    int searchId = Integer.valueOf(bufferedReader.readLine());
+                    logger.info(ENTER_ID_MESSAGE);
+                    int searchId = Integer.parseInt(bufferedReader.readLine());
                     logger.info(pricePlanManager.findPricePlanById(searchId));
                     break;
                 case 3:
@@ -406,16 +470,17 @@ public class Menu {
                     }
                     break;
             }
-            logger.info("Going back to menu\n\n");
-            show();
-        } catch (IOException e) {
+            logger.info(GOING_BACK_TO_MENU_MESSAGE);
+            showAdminMenuModification();
+        }
+        catch (IOException e) {
             logger.error("Table price_plan error: " + e.getMessage());
         }
     }
 
     private PricePlanEntity getParametersAndCreatePricePlanEntityWithThem() throws IOException {
         logger.info("Id:");
-        Integer createId = Integer.valueOf(bufferedReader.readLine());
+        Integer createId = Integer.parseInt(bufferedReader.readLine());
         logger.info("Name:");
         String createName = bufferedReader.readLine();
         logger.info("Specifications:");
@@ -423,46 +488,49 @@ public class Menu {
         logger.info("Price:");
         BigDecimal createPrice = new BigDecimal(bufferedReader.readLine());
         logger.info("Mobile number Id:");
-        Integer createMobileNumberId = Integer.valueOf(bufferedReader.readLine());
+        Integer createMobileNumberId = Integer.parseInt(bufferedReader.readLine());
         return new PricePlanEntity(createId, createName, createSpecifications, createPrice, createMobileNumberId);
     }
 
     private void selectTableUsersHaveMobileDevicesAction() {
         logger.info("Table users_have_mobile_devices");
-        logger.info("Find all - press 1");
+        logger.info(FIND_ALL_MESSAGE);
         logger.info("Find users with mobile devices by user id - press 2");
         logger.info("Create user with mobile device - press 3");
-//        logger.info("Update user with mobile device - press 4");
+        //        logger.info("Update user with mobile device - press 4");
         logger.info("Delete user with mobile device - press 5");
         try {
-            int choice = Integer.valueOf(bufferedReader.readLine());
+            int choice = Integer.parseInt(bufferedReader.readLine());
             switch (choice) {
                 case 1:
                     logger.info(usersHaveMobileDevicesManager.findAllUsersHaveMobileDevices());
                     break;
                 case 2:
                     logger.info("Enter user id for search");
-                    int searchId = Integer.valueOf(bufferedReader.readLine());
+                    int searchId = Integer.parseInt(bufferedReader.readLine());
                     logger.info(usersHaveMobileDevicesManager.findUsersHaveMobileDevicesByUserId(searchId));
                     break;
                 case 3:
                     logger.info("Enter the parameters for user having mobile device you want to create");
                     UsersHaveMobileDevicesEntity usersHaveMobileDevicesCreateEntity =
                             getParametersAndCreateUsersHaveMobileDevicesEntityWithThem();
-                    final boolean createResult = usersHaveMobileDevicesManager.create(usersHaveMobileDevicesCreateEntity);
+                    final boolean createResult = usersHaveMobileDevicesManager
+                            .create(usersHaveMobileDevicesCreateEntity);
                     if (createResult) {
                         logger.info("User with mobile device added");
                     }
                     break;
-//                case 4:
-//                    logger.info("Enter the parameters for user having mobile device you want to update");
-//                    UsersHaveMobileDevicesEntity usersHaveMobileDevicesUpdateEntity =
-//                            getParametersAndCreateUsersHaveMobileDevicesEntityWithThem();
-//                    final boolean updateResult = usersHaveMobileDevicesManager.update(usersHaveMobileDevicesUpdateEntity);
-//                    if (updateResult) {
-//                        logger.info("User with mobile device updated");
-//                    }
-//                    break;
+                //                case 4:
+                //                    logger.info("Enter the parameters for user having mobile device you want to
+                //                    update");
+                //                    UsersHaveMobileDevicesEntity usersHaveMobileDevicesUpdateEntity =
+                //                            getParametersAndCreateUsersHaveMobileDevicesEntityWithThem();
+                //                    final boolean updateResult = usersHaveMobileDevicesManager.update
+                //                    (usersHaveMobileDevicesUpdateEntity);
+                //                    if (updateResult) {
+                //                        logger.info("User with mobile device updated");
+                //                    }
+                //                    break;
                 case 5:
                     logger.info("Enter the parameters for user having mobile device you want to delete");
                     UsersHaveMobileDevicesEntity usersHaveMobileDevicesDeleteEntity =
@@ -474,37 +542,39 @@ public class Menu {
                     }
                     break;
             }
-            logger.info("Going back to menu\n\n");
-            show();
-        } catch (IOException e) {
+            logger.info(GOING_BACK_TO_MENU_MESSAGE);
+            showAdminMenuModification();
+        }
+        catch (IOException e) {
             logger.error("Table users_have_mobile_devices error: " + e.getMessage());
         }
     }
 
-    private UsersHaveMobileDevicesEntity getParametersAndCreateUsersHaveMobileDevicesEntityWithThem() throws IOException {
+    private UsersHaveMobileDevicesEntity getParametersAndCreateUsersHaveMobileDevicesEntityWithThem()
+            throws IOException {
         logger.info("User Id:");
-        Integer createUserId = Integer.valueOf(bufferedReader.readLine());
+        Integer createUserId = Integer.parseInt(bufferedReader.readLine());
         logger.info("Mobile device Id:");
-        Integer createMobileDeviceId = Integer.valueOf(bufferedReader.readLine());
+        Integer createMobileDeviceId = Integer.parseInt(bufferedReader.readLine());
         return new UsersHaveMobileDevicesEntity(createUserId, createMobileDeviceId);
     }
 
     private void selectTableMobileDeviceAction() {
         logger.info("Table mobile_device");
-        logger.info("Find all - press 1");
+        logger.info(FIND_ALL_MESSAGE);
         logger.info("Find mobile device by id - press 2");
         logger.info("Create mobile device - press 3");
         logger.info("Update mobile device - press 4");
         logger.info("Delete mobile device - press 5");
         try {
-            int choice = Integer.valueOf(bufferedReader.readLine());
+            int choice = Integer.parseInt(bufferedReader.readLine());
             switch (choice) {
                 case 1:
                     logger.info(mobileDeviceManager.findAllMobileDevices());
                     break;
                 case 2:
                     logger.info("Enter mobile device id for search");
-                    int searchId = Integer.valueOf(bufferedReader.readLine());
+                    int searchId = Integer.parseInt(bufferedReader.readLine());
                     logger.info(mobileDeviceManager.findMobileDeviceById(searchId));
                     break;
                 case 3:
@@ -532,16 +602,17 @@ public class Menu {
                     }
                     break;
             }
-            logger.info("Going back to menu\n\n");
-            show();
-        } catch (IOException e) {
+            logger.info(GOING_BACK_TO_MENU_MESSAGE);
+            showAdminMenuModification();
+        }
+        catch (IOException e) {
             logger.error("Table mobile_devices error: " + e.getMessage());
         }
     }
 
     private MobileDeviceEntity getParametersAndCreateMobileDeviceEntityWithThem() throws IOException {
         logger.info("Id:");
-        Integer createId = Integer.valueOf(bufferedReader.readLine());
+        Integer createId = Integer.parseInt(bufferedReader.readLine());
         logger.info("Brand:");
         String createBrand = bufferedReader.readLine();
         logger.info("Model:");

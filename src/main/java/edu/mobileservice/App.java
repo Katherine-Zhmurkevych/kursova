@@ -10,7 +10,7 @@ import java.sql.SQLException;
 public class App {
 
     public static void main(String[] args) {
-        new Menu().show();
+        new Menu().mainMenu();
         Connection connection = ConnectionUtil.getConnection();
         try {
             connection.close();
